@@ -5,7 +5,7 @@
  * @email:26015696@qq.com
  * @Tel/Weixin:13078095006
  * @Date  2019-01 9:45
- * Description：
+ * Description：数据库表
 */
 package table
 
@@ -19,4 +19,21 @@ type User struct {
 	Phone       string `xorm:"unique varchar(16) default('')"`
 	Email       string `xorm:"unique varchar(128) default('')"`
 	CompanyName string `xorm:"varchar(128) default('')"`
+}
+
+//文章分类
+type ArticleSort struct {
+	Id        int32  `xorm:"pk autoincr"`
+	Name      string `xorm:"varchar(128) default('')"`
+	ShowIndex int32  `xorm:" default(0)"`
+	Father    int32  `xorm:"default(0)"`
+}
+
+//文章内容
+type Article struct {
+	Id         int32  `xorm:"pk autoincr"`
+	Title      string `xorm:"varchar(128) default('')"`
+	SortId     int32  `xorm:" default(0)"`
+	CreateTime int64  `xorm:"default(0)"`
+	ReadCount  int32  `xorm:"default(0)"`
 }

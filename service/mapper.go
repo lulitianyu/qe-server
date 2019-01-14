@@ -21,11 +21,27 @@ func SyncTable() {
 	if err != nil {
 		log.Println(`同步表:"User"出错了`, err.Error())
 	}
+
+	var articleSort table.ArticleSort
+	err = operate.CreateTable(&articleSort)
+	if err != nil {
+		log.Println(`同步表:"ArticleSort"出错了`, err.Error())
+	}
+
+	var article table.Article
+	err = operate.CreateTable(&article)
+	if err != nil {
+		log.Println(`同步表:"Article"出错了`, err.Error())
+	}
 }
 func GetTable(name string) interface{} {
 	switch name {
 	case "User":
 		return new(table.User)
+	case "ArticleSort":
+		return new(table.ArticleSort)
+	case "Article":
+		return new(table.Article)
 	default:
 		return nil
 	}

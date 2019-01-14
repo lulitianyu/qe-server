@@ -18,7 +18,7 @@ import (
 
 func main() {
 	//同步更新表结构
-	//SyncTable()
+	service.SyncTable()
 
 	var test = `[{
 		"uuid":"fasdfaf243--",
