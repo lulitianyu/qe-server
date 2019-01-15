@@ -11,15 +11,14 @@ package operate
 
 import (
 	"qe-server/db/connect"
-	"qe-server/service"
 )
 
-func Delete(command service.Command) (int64, error) {
+func Delete(command Command) (int64, error) {
 	engine, err := connect.GetEngine()
 	if err != nil {
 		return 0, err
 	}
-	table := service.GetTable(command.Table)
+	table := GetTable(command.Table)
 	//要返回的字段
 	return engine.Where(command.Where).Delete(table)
 }

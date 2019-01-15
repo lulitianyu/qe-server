@@ -1,3 +1,5 @@
+baliance.com/gooxml v1.0.1 h1:fG5lmxmjEVFfbKQ2NuyCuU3hMuuOb5avh5a38SZNO1o=
+baliance.com/gooxml v1.0.1/go.mod h1:+gpUgmkAF4zCtwOFPNRLDAvpVRWoKs5EeQTSv/HYFnw=
 github.com/antonholmquist/jason v1.0.0 h1:Ytg94Bcf1Bfi965K2q0s22mig/n4eGqEij/atENBhA0=
 github.com/antonholmquist/jason v1.0.0/go.mod h1:+GxMEKI0Va2U8h3os6oiUAetHAlGMvxjdpAH/9uvUMA=
 github.com/cockroachdb/apd v1.1.0/go.mod h1:8Sl8LxpKi29FqWXR16WEFZRNSz3SoPzUzeMeY4+DwBQ=

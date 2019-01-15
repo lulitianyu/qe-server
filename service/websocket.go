@@ -17,6 +17,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"qe-server/db/operate"
 	"time"
 	"unicode/utf8"
 )
@@ -197,7 +198,7 @@ func command(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		var curdd Command
+		var curdd operate.Command
 		err = json.Unmarshal(b, &curdd)
 		log.Println("err:", err)
 		log.Println("err:", curdd.Table)

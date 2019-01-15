@@ -14,10 +14,9 @@ import (
 	"fmt"
 	"github.com/antonholmquist/jason"
 	"qe-server/db/connect"
-	"qe-server/service"
 )
 
-func Create(command service.Command) (int64, []error) {
+func Create(command Command) (int64, []error) {
 	errList := make([]error, 0)
 	jsonData, err := jason.NewValueFromBytes([]byte(command.Data))
 	if err != nil {
@@ -32,7 +31,7 @@ func Create(command service.Command) (int64, []error) {
 	}
 	return insertMultiple(command, jsonArray)
 }
-func insertMultiple(command service.Command, jsonArray []*jason.Value) (int64, []error) {
+func insertMultiple(command Command, jsonArray []*jason.Value) (int64, []error) {
 	errList := make([]error, 0)
 	engine, err := connect.GetEngine()
 	if err != nil {
@@ -46,7 +45,7 @@ func insertMultiple(command service.Command, jsonArray []*jason.Value) (int64, [
 			errList = append(errList, err)
 			continue
 		}
-		table := service.GetTable(command.Table)
+		table := GetTable(command.Table)
 		err = json.Unmarshal([]byte(s.String()), &table)
 		if err != nil {
 			//log.Println("出错了,单行数据不是有效的json:",err.Error())

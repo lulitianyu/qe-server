@@ -15,10 +15,9 @@ import (
 	"fmt"
 	"github.com/antonholmquist/jason"
 	"qe-server/db/connect"
-	"qe-server/service"
 )
 
-func Update(command service.Command) (int64, []error) {
+func Update(command Command) (int64, []error) {
 	errList := make([]error, 0)
 	jsonData, err := jason.NewValueFromBytes([]byte(command.Data))
 	if err != nil {
@@ -33,7 +32,7 @@ func Update(command service.Command) (int64, []error) {
 	}
 	return updateMultiple(command, jsonArray)
 }
-func updateMultiple(command service.Command, jsonArray []*jason.Value) (int64, []error) {
+func updateMultiple(command Command, jsonArray []*jason.Value) (int64, []error) {
 	errList := make([]error, 0)
 	engine, err := connect.GetEngine()
 	if err != nil {
@@ -47,7 +46,7 @@ func updateMultiple(command service.Command, jsonArray []*jason.Value) (int64, [
 			errList = append(errList, err)
 			continue
 		}
-		table := service.GetTable(command.Table)
+		table := GetTable(command.Table)
 		err = json.Unmarshal([]byte(s.String()), &table)
 		//用户传什么字段进来，就更新什么字段
 		var cols = make([]string, 0)

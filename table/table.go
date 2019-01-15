@@ -21,8 +21,8 @@ type User struct {
 	CompanyName string `xorm:"varchar(128) default('')"`
 }
 
-//文章分类
-type ArticleSort struct {
+//文章项目
+type Project struct {
 	Id        int32  `xorm:"pk autoincr"`
 	Name      string `xorm:"varchar(128) default('')"`
 	ShowIndex int32  `xorm:" default(0)"`
