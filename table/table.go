@@ -26,7 +26,7 @@ type Project struct {
 	Id        int32  `xorm:"pk autoincr"`
 	Name      string `xorm:"varchar(128) default('')"`
 	ShowIndex int32  `xorm:" default(0)"`
-	Father    int32  `xorm:"default(0)"`
+	FatherId  int32  `xorm:"default(0)"`
 }
 
 //文章内容

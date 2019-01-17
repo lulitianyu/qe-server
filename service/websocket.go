@@ -178,7 +178,21 @@ func command(w http.ResponseWriter, r *http.Request) {
 		log.Println("Upgrade:", err)
 		return
 	}
-	defer conn.Close()
+	w, err = conn.NextWriter("ok")
+	if err != nil {
+		log.Println("NextWriter:", err)
+		return
+	}
+
+	count, err := io.WriteString(w, "<html><body>Echo Server</body></html>")
+	if err != nil {
+		log.Println("出错了:", err)
+		return
+	} else {
+		log.Println("count:", count)
+	}
+
+	//defer conn.Close()
 	var i int = 0
 	for {
 		mt, b, err := conn.ReadMessage()
@@ -188,7 +202,7 @@ func command(w http.ResponseWriter, r *http.Request) {
 			if err != io.EOF {
 				log.Println("NextReader:", err)
 			}
-			return
+			break
 		}
 		log.Println("收到:", string(b))
 		if mt == websocket.TextMessage {
@@ -202,7 +216,11 @@ func command(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(b, &curdd)
 		log.Println("err:", err)
 		log.Println("err:", curdd.Table)
+
 	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
 }
 
 var addr = flag.String("addr", ":9000", "http service address")
