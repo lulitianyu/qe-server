@@ -13,12 +13,13 @@ package table
 type User struct {
 	Id          int64  `xorm:"pk autoincr"`
 	Uuid        string `xorm:"varchar(256) default('')"`
-	Password    string `xorm:"varchar(256) default('')"`
+	Password    string `json:"-",xorm:"varchar(256) default('')"`
 	Account     int64  `xorm:"unique default(0)"`
 	Name        string `xorm:"varchar(64) default('')"`
 	Phone       string `xorm:"unique varchar(16) default('')"`
 	Email       string `xorm:"unique varchar(128) default('')"`
 	CompanyName string `xorm:"varchar(128) default('')"`
+	Role        int16  `xorm:"default(0)"`
 }
 
 //文章项目

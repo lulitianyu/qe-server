@@ -10,6 +10,7 @@
 package operate
 
 import (
+	"fmt"
 	"github.com/go-xorm/xorm"
 	"qe-server/db/connect"
 )
@@ -22,6 +23,7 @@ func Read(command Command) (interface{}, error) {
 	table := GetTable(command.Table)
 	var rows *xorm.Rows
 	//要返回的字段
+	fmt.Println("command.Where", command.Where)
 	rows, err = engine.Cols(command.Column).Where(command.Where).OrderBy(command.Order).Limit(command.Limit[0], command.Limit[1]).Rows(table)
 	if err != nil {
 		return nil, err

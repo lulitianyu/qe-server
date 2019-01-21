@@ -28,3 +28,19 @@ type Command struct {
 	Order  string //排序方法
 	Limit  [2]int //条数限制，如[100,10]，从第10条起，最多100条
 }
+
+//一般输出
+type Result struct {
+	State   bool
+	Message string
+	Data    interface{}
+}
+
+//分页输出
+type Page struct {
+	RowCount  int64
+	PageSize  int64
+	PageCount int64
+	PageIndex int64
+	DataRow   interface{}
+}

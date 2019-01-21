@@ -31,146 +31,8 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-// echoCopy echoes messages from the client using io.Copy.
-func echoCopy(w http.ResponseWriter, r *http.Request, writerOnly bool) {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println("Upgrade:", err)
-		return
-	}
-	defer conn.Close()
-	for {
-		mt, r, err := conn.NextReader()
-		if err != nil {
-			if err != io.EOF {
-				log.Println("NextReader:", err)
-			}
-			return
-		}
-		if mt == websocket.TextMessage {
-			r = &validator{r: r}
-		}
-		w, err := conn.NextWriter(mt)
-		if err != nil {
-			log.Println("NextWriter:", err)
-			return
-		}
-		if mt == websocket.TextMessage {
-			r = &validator{r: r}
-		}
-		if writerOnly {
-			_, err = io.Copy(struct{ io.Writer }{w}, r)
-		} else {
-			_, err = io.Copy(w, r)
-		}
-		if err != nil {
-			if err == errInvalidUTF8 {
-				conn.WriteControl(websocket.CloseMessage,
-					websocket.FormatCloseMessage(websocket.CloseInvalidFramePayloadData, ""),
-					time.Time{})
-			}
-			log.Println("Copy:", err)
-			return
-		}
-		err = w.Close()
-		if err != nil {
-			log.Println("Close:", err)
-			return
-		}
-	}
-}
-
-func echoCopyWriterOnly(w http.ResponseWriter, r *http.Request) {
-	echoCopy(w, r, true)
-}
-
-func echoCopyFull(w http.ResponseWriter, r *http.Request) {
-	echoCopy(w, r, false)
-}
-
-// echoReadAll echoes messages from the client by reading the entire message
-// with ioutil.ReadAll.
-func echoReadAll(w http.ResponseWriter, r *http.Request, writeMessage, writePrepared bool) {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println("Upgrade:", err)
-		return
-	}
-	defer conn.Close()
-	for {
-		mt, b, err := conn.ReadMessage()
-		if err != nil {
-			if err != io.EOF {
-				log.Println("NextReader:", err)
-			}
-			return
-		}
-		if mt == websocket.TextMessage {
-			if !utf8.Valid(b) {
-				conn.WriteControl(websocket.CloseMessage,
-					websocket.FormatCloseMessage(websocket.CloseInvalidFramePayloadData, ""),
-					time.Time{})
-				log.Println("ReadAll: invalid utf8")
-			}
-		}
-		if writeMessage {
-			if !writePrepared {
-				err = conn.WriteMessage(mt, b)
-				if err != nil {
-					log.Println("WriteMessage:", err)
-				}
-			} else {
-				pm, err := websocket.NewPreparedMessage(mt, b)
-				if err != nil {
-					log.Println("NewPreparedMessage:", err)
-					return
-				}
-				err = conn.WritePreparedMessage(pm)
-				if err != nil {
-					log.Println("WritePreparedMessage:", err)
-				}
-			}
-		} else {
-			w, err := conn.NextWriter(mt)
-			if err != nil {
-				log.Println("NextWriter:", err)
-				return
-			}
-			if _, err := w.Write(b); err != nil {
-				log.Println("Writer:", err)
-				return
-			}
-			if err := w.Close(); err != nil {
-				log.Println("Close:", err)
-				return
-			}
-		}
-	}
-}
-
-func echoReadAllWriter(w http.ResponseWriter, r *http.Request) {
-	echoReadAll(w, r, false, false)
-}
-
-func echoReadAllWriteMessage(w http.ResponseWriter, r *http.Request) {
-	echoReadAll(w, r, true, false)
-}
-
-func echoReadAllWritePreparedMessage(w http.ResponseWriter, r *http.Request) {
-	echoReadAll(w, r, true, true)
-}
-
-func serveHome(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.Error(w, "Not found.", http.StatusNotFound)
-		return
-	}
-	if r.Method != "GET" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	io.WriteString(w, "<html><body>Echo Server</body></html>")
+func close(conn *websocket.Conn) {
+	_ = conn.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseInvalidFramePayloadData, ""), time.Time{})
 }
 func command(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
@@ -178,24 +40,10 @@ func command(w http.ResponseWriter, r *http.Request) {
 		log.Println("Upgrade:", err)
 		return
 	}
-	w, err = conn.NextWriter("ok")
-	if err != nil {
-		log.Println("NextWriter:", err)
-		return
-	}
-
-	count, err := io.WriteString(w, "<html><body>Echo Server</body></html>")
-	if err != nil {
-		log.Println("出错了:", err)
-		return
-	} else {
-		log.Println("count:", count)
-	}
-
-	//defer conn.Close()
+	defer conn.Close()
 	var i int = 0
 	for {
-		mt, b, err := conn.ReadMessage()
+		messageType, byteMessage, err := conn.ReadMessage()
 		i++
 		log.Println("跑了:", i, "次")
 		if err != nil {
@@ -204,36 +52,42 @@ func command(w http.ResponseWriter, r *http.Request) {
 			}
 			break
 		}
-		log.Println("收到:", string(b))
-		if mt == websocket.TextMessage {
-			if !utf8.Valid(b) {
+		if messageType == websocket.TextMessage {
+			if !utf8.Valid(byteMessage) {
 				_ = conn.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseInvalidFramePayloadData, ""), time.Time{})
 				log.Println("ReadAll: invalid utf8")
+				return
 			}
 		}
 
-		var curdd operate.Command
-		err = json.Unmarshal(b, &curdd)
-		log.Println("err:", err)
-		log.Println("err:", curdd.Table)
-
+		log.Println("收到:", string(byteMessage))
+		var command operate.Command
+		err = json.Unmarshal(byteMessage, &command)
+		if err != nil {
+			err = conn.WriteJSON(operate.Result{false, "无法识别的命令.", err.Error()})
+			close(conn)
+		}
+		switch command.Method {
+		case "r":
+			result, err := operate.Read(command)
+			if err != nil {
+				err = conn.WriteJSON(operate.Result{false, "读取数据出错了.", err.Error()})
+			} else {
+				err = conn.WriteJSON(operate.Result{true, "读取成功.", result})
+			}
+			break
+		default:
+			break
+		}
+		close(conn)
 	}
-
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-
 }
 
 var addr = flag.String("addr", ":9000", "http service address")
 
 func WebsocketRun() {
 	flag.Parse()
-	http.HandleFunc("/", serveHome)
 	http.HandleFunc("/command", command)
-	http.HandleFunc("/c", echoCopyWriterOnly)
-	http.HandleFunc("/f", echoCopyFull)
-	http.HandleFunc("/r", echoReadAllWriter)
-	http.HandleFunc("/m", echoReadAllWriteMessage)
-	http.HandleFunc("/p", echoReadAllWritePreparedMessage)
 	err := http.ListenAndServe(*addr, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
