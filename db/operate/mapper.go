@@ -37,7 +37,7 @@ func GetTable(name string) interface{} {
 	switch name {
 	case "User":
 		return new(table.User)
-	case "ArticleSort":
+	case "Project":
 		return new(table.Project)
 	case "Article":
 		return new(table.Article)

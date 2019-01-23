@@ -26,7 +26,7 @@ type Command struct {
 	Data   string //操作的数据
 	Where  string //操作条件
 	Order  string //排序方法
-	Limit  [2]int //条数限制，如[100,10]，从第10条起，最多100条
+	Limit  [2]int //条数限制，如[100,10]，从第10条起，最多100条---xorm限制获取的数目，第一个参数为条数，第二个参数表示开始位置，如果不传则为0
 }
 
 //一般输出
