@@ -35,7 +35,7 @@ func close(conn *websocket.Conn) {
 	_ = conn.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseInvalidFramePayloadData, ""), time.Time{})
 }
 func command(w http.ResponseWriter, r *http.Request) {
-	time.Sleep(time.Duration(10) * time.Second)
+	time.Sleep(time.Duration(5) * time.Second)
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("Upgrade:", err)

@@ -33,13 +33,25 @@ func Read(command Command) (interface{}, error) {
 		session = engine.Cols(command.Column)
 	}
 	if command.Where != "" {
-		session = session.Where(command.Where)
+		if session == nil {
+			session = engine.Where(command.Where)
+		} else {
+			session = session.Where(command.Where)
+		}
 	}
 	if command.Order != "" {
-		session = session.OrderBy(command.Order)
+		if session == nil {
+			session = engine.OrderBy(command.Order)
+		} else {
+			session = session.OrderBy(command.Order)
+		}
 	}
 	if command.Limit[0] != 0 && command.Limit[1] != 0 {
-		session = session.Limit(command.Limit[0], command.Limit[1])
+		if session == nil {
+			session = engine.Limit(command.Limit[0], command.Limit[1])
+		} else {
+			session = session.Limit(command.Limit[0], command.Limit[1])
+		}
 	}
 	if session == nil {
 		rows, err = engine.Rows(table)
