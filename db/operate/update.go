@@ -26,9 +26,8 @@ func Update(command Command) (int64, []error) {
 	//检测是否为数组json
 	jsonArray, err := jsonData.Array()
 	if err != nil { //不是数组，就自己造一个数组
-		var jsonArray [1]*jason.Value
-		s, _ := jason.NewValueFromBytes([]byte(command.Data))
-		jsonArray[0] = s
+		//log.Println("不是数组:",err.Error(),jsonArray)
+		jsonArray = append(jsonArray, jsonData)
 	}
 	return updateMultiple(command, jsonArray)
 }
@@ -46,13 +45,13 @@ func updateMultiple(command Command, jsonArray []*jason.Value) (int64, []error) 
 			errList = append(errList, err)
 			continue
 		}
-		table := GetTable(command.Table)
-		err = json.Unmarshal([]byte(s.String()), &table)
 		//用户传什么字段进来，就更新什么字段
 		var cols = make([]string, 0)
-		for key, _ := range s.Map() {
-			cols = append(cols, key)
+		for k, _ := range s.Map() {
+			cols = append(cols, k)
 		}
+		table := GetTable(command.Table)
+		err = json.Unmarshal([]byte(s.String()), &table)
 		if err != nil {
 			//log.Println("出错了,单行数据不是有效的json:",err.Error())
 			errList = append(errList, err)

@@ -35,7 +35,7 @@ func close(conn *websocket.Conn) {
 	_ = conn.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseInvalidFramePayloadData, ""), time.Time{})
 }
 func command(w http.ResponseWriter, r *http.Request) {
-	time.Sleep(time.Duration(5) * time.Second)
+	//time.Sleep(time.Duration(2) * time.Second)
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("Upgrade:", err)
@@ -75,6 +75,30 @@ func command(w http.ResponseWriter, r *http.Request) {
 				err = conn.WriteJSON(operate.Result{false, "读取数据出错了.", err.Error()})
 			} else {
 				err = conn.WriteJSON(operate.Result{true, "读取成功.", result})
+			}
+			break
+		case "c":
+			affected, errList := operate.Create(command)
+			if len(errList) > 0 {
+				err = conn.WriteJSON(operate.Result{false, "写入数据出错了.", errList})
+			} else {
+				err = conn.WriteJSON(operate.Result{true, "写入成功.", affected})
+			}
+			break
+		case "u":
+			affected, errList := operate.Update(command)
+			if len(errList) > 0 {
+				err = conn.WriteJSON(operate.Result{false, "更新数据出错了.", errList})
+			} else {
+				err = conn.WriteJSON(operate.Result{true, "更新成功.", affected})
+			}
+			break
+		case "d":
+			affected, err := operate.Delete(command)
+			if err != nil {
+				err = conn.WriteJSON(operate.Result{false, "删除数据出错了.", err.Error()})
+			} else {
+				err = conn.WriteJSON(operate.Result{true, "删除成功.", affected})
 			}
 			break
 		default:

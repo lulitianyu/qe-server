@@ -25,9 +25,7 @@ func Create(command Command) (int64, []error) {
 	//检测是否为数组json
 	jsonArray, err := jsonData.Array()
 	if err != nil { //不是数组，就自己造一个数组
-		var jsonArray [1]*jason.Value
-		s, _ := jason.NewValueFromBytes([]byte(command.Data))
-		jsonArray[0] = s
+		jsonArray = append(jsonArray, jsonData)
 	}
 	return insertMultiple(command, jsonArray)
 }
