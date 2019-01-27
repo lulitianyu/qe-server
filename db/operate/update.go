@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"github.com/antonholmquist/jason"
 	"qe-server/db/connect"
+	"qe-server/tools"
 )
 
 func Update(command Command) (int64, []error) {
@@ -48,17 +49,19 @@ func updateMultiple(command Command, jsonArray []*jason.Value) (int64, []error) 
 		//用户传什么字段进来，就更新什么字段
 		var cols = make([]string, 0)
 		for k, _ := range s.Map() {
+			//字段名转换成下划线小写的形式
+			k = tools.PascalToLower(k)
 			cols = append(cols, k)
 		}
-		table := GetTable(command.Table)
-		err = json.Unmarshal([]byte(s.String()), &table)
+		t := GetTable(command.Table)
+		err = json.Unmarshal([]byte(s.String()), &t)
 		if err != nil {
 			//log.Println("出错了,单行数据不是有效的json:",err.Error())
 			errList = append(errList, err)
 		} else {
-			row, err := engine.Cols(cols...).Where(command.Where).Update(table)
+			row, err := engine.Cols(cols...).Where(command.Where).Update(t)
 			if err != nil {
-				//log.Println("写入数据出错了:",err.Error())
+				//log.Println("更新数据出错了:",err.Error())
 				errList = append(errList, err)
 			} else {
 				//log.Println("成功更新数据:",row)
@@ -67,5 +70,4 @@ func updateMultiple(command Command, jsonArray []*jason.Value) (int64, []error) 
 		}
 	}
 	return affected, errList
-
 }

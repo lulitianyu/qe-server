@@ -18,6 +18,7 @@ import (
 	"log"
 	"net/http"
 	"qe-server/db/operate"
+	"strconv"
 	"time"
 	"unicode/utf8"
 )
@@ -35,7 +36,7 @@ func close(conn *websocket.Conn) {
 	_ = conn.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseInvalidFramePayloadData, ""), time.Time{})
 }
 func command(w http.ResponseWriter, r *http.Request) {
-	//time.Sleep(time.Duration(2) * time.Second)
+	//time.Sleep(time.Duration(1) * time.Second)
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("Upgrade:", err)
@@ -87,8 +88,13 @@ func command(w http.ResponseWriter, r *http.Request) {
 			break
 		case "u":
 			affected, errList := operate.Update(command)
+
 			if len(errList) > 0 {
-				err = conn.WriteJSON(operate.Result{false, "更新数据出错了.", errList})
+				var errorString = ""
+				for k, v := range errList {
+					errorString = "[" + strconv.Itoa(k) + "]:" + errorString + v.Error()
+				}
+				err = conn.WriteJSON(operate.Result{false, "更新数据出错了.", errorString})
 			} else {
 				err = conn.WriteJSON(operate.Result{true, "更新成功.", affected})
 			}
@@ -104,7 +110,7 @@ func command(w http.ResponseWriter, r *http.Request) {
 		default:
 			break
 		}
-		close(conn)
+		//close(conn)
 	}
 }
 
