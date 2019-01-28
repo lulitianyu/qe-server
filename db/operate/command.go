@@ -31,9 +31,10 @@ type Command struct {
 
 //一般输出
 type Result struct {
-	State   bool
-	Message string
-	Data    interface{}
+	State    bool
+	Message  string
+	BufferId int32 //前端缓冲数组的下标
+	Data     interface{}
 }
 
 //分页输出

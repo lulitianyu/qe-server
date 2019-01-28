@@ -10,7 +10,6 @@
 package service
 
 import (
-	"encoding/json"
 	"errors"
 	"flag"
 	"github.com/gorilla/websocket"
@@ -20,7 +19,6 @@ import (
 	"qe-server/db/operate"
 	"strconv"
 	"time"
-	"unicode/utf8"
 )
 
 var upgrader = websocket.Upgrader{
@@ -42,32 +40,18 @@ func command(w http.ResponseWriter, r *http.Request) {
 		log.Println("Upgrade:", err)
 		return
 	}
-	defer conn.Close()
+	//defer conn.Close()
 	var i int = 0
 	for {
-		messageType, byteMessage, err := conn.ReadMessage()
 		i++
 		log.Println("跑了:", i, "次")
-		if err != nil {
-			if err != io.EOF {
-				log.Println("NextReader:", err)
-			}
-			break
-		}
-		if messageType == websocket.TextMessage {
-			if !utf8.Valid(byteMessage) {
-				_ = conn.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseInvalidFramePayloadData, ""), time.Time{})
-				log.Println("ReadAll: invalid utf8")
-				return
-			}
-		}
 
-		log.Println("收到:", string(byteMessage))
 		var command operate.Command
-		err = json.Unmarshal(byteMessage, &command)
+		err := conn.ReadJSON(&command)
 		if err != nil {
+			log.Println("读取出错:", err)
 			err = conn.WriteJSON(operate.Result{false, "无法识别的命令.", err.Error()})
-			close(conn)
+			break
 		}
 		switch command.Method {
 		case "r":
